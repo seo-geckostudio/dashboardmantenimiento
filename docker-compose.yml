@@ -1,0 +1,86 @@
+version: "3.9"
+
+networks:
+  internal:
+  hostbind:
+    external: false
+
+volumes:
+  dbdata:
+
+services:
+  db:
+    image: mysql:8.0
+    command: ["--default-authentication-plugin=mysql_native_password"]
+    environment:
+      MYSQL_DATABASE: wpops
+      MYSQL_USER: wpops
+      MYSQL_PASSWORD: ${DB_PASS}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASS}
+    volumes:
+      - dbdata:/var/lib/mysql
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - internal
+    ports:
+      - "0.0.0.0:3307:3306"
+
+  agent:
+    build: ./docker/agent
+    environment:
+      DB_DSN: "mysql:host=db;dbname=wpops;charset=utf8mb4"
+      DB_USER: "wpops"
+      DB_PASS: ${DB_PASS}
+      SCAN_ROOTS: "/host/home/*/public_html:/host/var/www/*"
+      EXCLUDE_DIRS: "node_modules:vendor:cache"
+      PUID: ${PUID:-1000}
+      PGID: ${PGID:-1000}
+    volumes:
+      - /home:/host/home:ro
+      - /var/www:/host/var/www:ro
+      - /etc/passwd:/etc/passwd:ro
+      - /etc/group:/etc/group:ro
+      - ./app/agent:/app
+    depends_on:
+      - db
+    networks:
+      - internal
+      - hostbind
+    restart: unless-stopped
+
+  dashboard:
+    build: ./docker/dashboard
+    environment:
+      DB_HOST: "db"
+      DB_PORT: "3306"
+      DB_NAME: "wpops"
+      DB_USER: "root"
+      DB_PASS: ${DB_ROOT_PASS}
+      APP_ENV: "prod"
+      JWT_SECRET: ${JWT_SECRET}
+    ports:
+      - "0.0.0.0:8080:80"
+    volumes:
+      - ./app/dashboard:/var/www/html
+    depends_on:
+      - db
+    networks:
+      - internal
+    restart: unless-stopped
+
+  mcp-wpops:
+    build: ./docker/mcp-wpops
+    environment:
+      DB_DSN: "mysql:host=db;dbname=wpops;charset=utf8mb4"
+      DB_USER: "wpops"
+      DB_PASS: ${DB_PASS}
+      MCP_AUTH_TOKEN: ${MCP_AUTH_TOKEN}
+    ports:
+      - "0.0.0.0:7070:7070"
+    depends_on:
+      - db
+    networks:
+      - internal
+    stdin_open: true
+    tty: true
+    restart: unless-stopped
