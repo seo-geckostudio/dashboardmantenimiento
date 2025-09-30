@@ -1,0 +1,9 @@
+# WordPress Operations Maintenance Crontab
+# Daily site detection at 2 AM
+0 2 * * * /usr/local/bin/php /app/bin/scan-sites.php >> /var/log/wpops-scan.log 2>&1
+
+# Weekly validation on Sundays at 3 AM
+0 3 * * 0 /usr/local/bin/php /app/bin/validate-weekly.php >> /var/log/wpops-validate.log 2>&1
+
+# Cleanup old logs monthly
+0 4 1 * * find /var/log -name "wpops-*.log" -mtime +30 -delete
