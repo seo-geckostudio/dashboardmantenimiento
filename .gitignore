@@ -1,0 +1,58 @@
+# Environment files
+.env
+.env.local
+.env.production
+
+# Composer
+vendor/
+composer.lock
+
+# Node modules
+node_modules/
+package-lock.json
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Cache
+cache/
+tmp/
+
+# Docker volumes
+docker/data/
+
+# SSH keys
+ssh_keys/
+*.pem
+*.key
+
+# Test results
+test-results/
+playwright-report/
+
+# Cookies and session files
+cookies.txt
+sessions/
+
+# Database dumps
+*.sql
+*.dump
+
+# Backup files
+*.bak
+*.backup
+
+# Temporary files
+*.tmp
+*.temp
