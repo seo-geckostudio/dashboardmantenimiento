@@ -1,0 +1,1 @@
+# MCP WordPress Operations Server Package
